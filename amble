@@ -1,8 +1,6 @@
 #!/usr/bin/env ruby
 
 require 'net/http'
-require 'json'
-require 'fileutils'
 
 HEADERS_RAW = IO.readlines(ARGV[0]).map(&:strip)
 HOST = HEADERS_RAW
@@ -17,18 +15,20 @@ HEADERS_PARSED = HEADERS_RAW
 PATHS = IO.readlines(ARGV[1]).map(&:strip)
 
 TARGET = ARGV[2]
-FileUtils.mkdir_p TARGET
-PATHS.each do |path|
-  uri = URI("http://#{HOST}#{path}")
-  req = Net::HTTP::Get.new(uri)
+File.open(TARGET, 'w') do |f|
+  PATHS.each do |path|
+    uri = URI("http://#{HOST}#{path}")
+    req = Net::HTTP::Get.new(uri)
 
-  HEADERS_PARSED.each do |key, value|
-    req[key] = value
-  end
+    HEADERS_PARSED.each do |key, value|
+      req[key] = value
+    end
 
-  Net::HTTP.start(uri.host, uri.port) do |http|
-    res = http.request req
-    filename = path.sub(/^\//, '').tr('/', '-')
-    File.write("#{TARGET}/#{filename}", JSON.pretty_generate(JSON.parse(res.body)))
+    Net::HTTP.start(uri.host, uri.port) do |http|
+      res = http.request req
+      filename = path.sub(/^\//, '').tr('/', '-')
+      f.puts "####{filename}###"
+      f.puts "#{res.body}\n"
+    end
   end
 end
