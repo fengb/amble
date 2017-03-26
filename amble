@@ -2,30 +2,40 @@
 
 require 'net/http'
 
-HEADERS_RAW = IO.readlines(ARGV[0]).map(&:strip)
-HOST = HEADERS_RAW
-       .find { |line| line.start_with? "Host:" }
-       .sub(/Host: /, '')
-HEADERS_PARSED = HEADERS_RAW
-                 .grep(/[A-Za-z-]+:/)
-                 .reject { |line| line.start_with? "Host:" }
-                 .map { |line| line.split(/:\s*/, 2) }
-                 .to_h
+def parse_options(header_file, path_file)
+  raw = IO.readlines(header_file).map(&:strip)
+  headers = raw
+            .grep(/[A-Za-z-]+:/)
+            .reject { |line| line.start_with? "Host:" }
+            .map { |line| line.split(/:\s*/, 2) }
+            .to_h
 
-PATHS = IO.readlines(ARGV[1]).map(&:strip)
+  {
+    headers: headers,
+    paths: IO.readlines(path_file).map(&:strip),
+    host: headers['Host']
+  }
+end
 
-PATHS.each do |path|
-  uri = URI("http://#{HOST}#{path}")
-  req = Net::HTTP::Get.new(uri)
+def amble(headers:, paths:, host:)
+  paths.each do |path|
+    uri = URI("http://#{host}#{path}")
+    req = Net::HTTP::Get.new(uri)
 
-  HEADERS_PARSED.each do |key, value|
-    req[key] = value
+    headers.each do |key, value|
+      req[key] = value
+    end
+
+    Net::HTTP.start(uri.host, uri.port) do |http|
+      res = http.request req
+      filename = path.sub(/^\//, '').tr('/', '-')
+      puts "####{filename}###"
+      puts "#{res.body}\n"
+    end
   end
+end
 
-  Net::HTTP.start(uri.host, uri.port) do |http|
-    res = http.request req
-    filename = path.sub(/^\//, '').tr('/', '-')
-    puts "####{filename}###"
-    puts "#{res.body}\n"
-  end
+if $PROGRAM_NAME == __FILE__
+  opts = parse_options(ARGV[0], ARGV[1])
+  amble(opts)
 end
