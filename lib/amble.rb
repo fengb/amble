@@ -13,11 +13,18 @@ module Amble
     .to_h
   end
 
-  def self.parse_options(header_file, path_file)
-    {
-      paths: IO.readlines(path_file).map(&:strip),
-      headers: parse_headers(IO.read(header_file))
-    }
+  def self.parse_options(args)
+    headers = $stdin.tty? ? {} : parse_headers($stdin.read)
+
+    OptionParser.new do |opts|
+      opts.on('-f', '--file=FILE', 'Header file') do |filename|
+        headers = parse_headers(IO.read(filename))
+      end
+
+      opts.parse!(args)
+    end
+
+    { headers: headers, paths: args }
   end
 
   def self.run(headers:, paths:)

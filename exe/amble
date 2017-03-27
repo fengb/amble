@@ -2,5 +2,5 @@
 
 require 'amble'
 
-opts = Amble.parse_options(ARGV[0], ARGV[1])
+opts = Amble.parse_options(ARGV)
 Amble.run(opts)

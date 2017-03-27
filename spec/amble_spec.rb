@@ -28,4 +28,43 @@ RSpec.describe Amble do
       )
     end
   end
+
+  describe '.parse_options' do
+    describe '[:headers]' do
+      after do
+        $stdin = STDIN
+      end
+
+      it 'defaults to {}' do
+        opts = Amble.parse_options([])
+        expect(opts[:headers]).to eq({})
+      end
+
+      it 'parses_headers(stdin) if not tty' do
+        $stdin = StringIO.new('this is sparta')
+        expect(Amble).to receive(:parse_headers).with('this is sparta').and_return(123)
+        opts = Amble.parse_options([])
+        expect(opts[:headers]).to eq(123)
+      end
+
+      it 'parses_headers(file) via -f "file"' do
+        expect(IO).to receive(:read).with('foobar').and_return('this is sparta')
+        expect(Amble).to receive(:parse_headers).with('this is sparta').and_return('dumdum')
+        opts = Amble.parse_options(['-f', 'foobar'])
+        expect(opts[:headers]).to eq('dumdum')
+      end
+    end
+
+    describe '[:paths]' do
+      it 'defaults to {}' do
+        opts = Amble.parse_options([])
+        expect(opts[:paths]).to eq([])
+      end
+
+      it 'converts regular arguments' do
+        opts = Amble.parse_options(['/api', '/google'])
+        expect(opts[:paths]).to eq(['/api', '/google'])
+      end
+    end
+  end
 end
