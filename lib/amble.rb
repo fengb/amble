@@ -5,15 +5,18 @@ require 'net/http'
 module Amble
   autoload :VERSION, 'amble/version'
 
-  def self.parse_options(header_file, path_file)
-    raw = IO.readlines(header_file).map(&:strip)
+  def self.parse_headers(str)
+    str.lines
+    .map(&:strip)
+    .grep(/[A-Za-z-]+:/)
+    .map { |line| line.split(/:\s*/, 2) }
+    .to_h
+  end
 
+  def self.parse_options(header_file, path_file)
     {
       paths: IO.readlines(path_file).map(&:strip),
-      headers: raw
-               .grep(/[A-Za-z-]+:/)
-               .map { |line| line.split(/:\s*/, 2) }
-               .to_h
+      headers: parse_headers(IO.read(header_file))
     }
   end
 
