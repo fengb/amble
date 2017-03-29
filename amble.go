@@ -4,10 +4,22 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 )
 
-func stream(url string) error {
-	resp, err := http.Get(url)
+var client = &http.Client{}
+
+func stream(url string, headers map[string]string) error {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -16,10 +28,12 @@ func stream(url string) error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("%s - %s\n", url, resp.Status)
+	resp.Header.Write(os.Stdout)
 	fmt.Println(string(body))
 	return nil
 }
 
 func main() {
-	stream("http://google.com/")
+	stream("http://google.com/", make(map[string]string))
 }
