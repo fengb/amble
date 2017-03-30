@@ -16,9 +16,10 @@ var parseHeaderTests = []struct {
 	{"Host:             example.com", H{"Host": "example.com"}, nil},
 	{"Host:example.com", H{"Host": "example.com"}, nil},
 	{"a:b\nc:d", H{"a": "b", "c": "d"}, nil},
+	{"foo", H{}, E{"foo"}},
+	{"foo\na:b", H{"a": "b"}, E{"foo"}},
 }
 
-// TODO: why doesn't reflect.DeepEqual work?
 func HeaderEqual(a H, b H) bool {
 	if len(a) != len(b) {
 		return false
@@ -37,12 +38,29 @@ func ErrorEqual(err error, exp E) bool {
 	if err == nil && exp == nil {
 		return true
 	}
+
+	if herr, ok := err.(*ParseHeaderError); ok {
+		// TODO: why doesn't reflect.DeepEqual work?
+		if len(herr.FailedLines) != len(exp) {
+			return false
+		}
+
+		for i, line := range herr.FailedLines {
+			if line != exp[i] {
+				return false
+			}
+		}
+
+		return true
+	}
+
 	return false
 }
 
 func TestParseHeaders(t *testing.T) {
 	for _, tt := range parseHeaderTests {
 		headers, err := ParseHeaders(tt.raw)
+		// TODO: why doesn't reflect.DeepEqual work?
 		if !HeaderEqual(headers, tt.out) {
 			t.Errorf("ParseHeader(%q) = <%s> want <%s>", tt.raw, headers, tt.out)
 		}
