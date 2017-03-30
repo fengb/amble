@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -8,13 +9,14 @@ type H map[string]string
 type E []string
 
 var parseHeaderTests = []struct {
-	raw string
-	out H
-	err E
+	raw      string
+	out      H
+	errLines E
 }{
 	{"Host: example.com", H{"Host": "example.com"}, nil},
 	{"Host:             example.com", H{"Host": "example.com"}, nil},
 	{"Host:example.com", H{"Host": "example.com"}, nil},
+	{"Host: example.com:123", H{"Host": "example.com:123"}, nil},
 	{"a:b\nc:d", H{"a": "b", "c": "d"}, nil},
 	{"foo", H{}, E{"foo"}},
 	{"foo\na:b", H{"a": "b"}, E{"foo"}},
@@ -59,13 +61,13 @@ func ErrorEqual(err error, exp E) bool {
 
 func TestParseHeaders(t *testing.T) {
 	for _, tt := range parseHeaderTests {
-		headers, err := ParseHeaders(tt.raw)
+		headers, err := ParseHeaders(strings.NewReader(tt.raw))
 		// TODO: why doesn't reflect.DeepEqual work?
 		if !HeaderEqual(headers, tt.out) {
 			t.Errorf("ParseHeader(%q) = <%s> want <%s>", tt.raw, headers, tt.out)
 		}
-		if !ErrorEqual(err, tt.err) {
-			t.Errorf("ParseHeader(%q) err <%s> want <%s>", tt.raw, err, tt.err)
+		if !ErrorEqual(err, tt.errLines) {
+			t.Errorf("ParseHeader(%q) err <%s> want <%s>", tt.raw, err, tt.errLines)
 		}
 	}
 }

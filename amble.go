@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -19,10 +20,14 @@ func (e *ParseHeaderError) Error() string {
 	return strings.Join(e.FailedLines, ", ")
 }
 
-func ParseHeaders(raw string) (map[string]string, error) {
+func ParseHeaders(r io.Reader) (map[string]string, error) {
+	raw, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
 	headers := make(map[string]string)
 	failed_lines := []string{}
-	for _, line := range strings.Split(raw, "\n") {
+	for _, line := range strings.Split(string(raw), "\n") {
 		tokens := HEADER_SPLITTER.Split(line, 2)
 		if len(tokens) == 2 {
 			headers[tokens[0]] = string(strings.TrimSpace(tokens[1]))
