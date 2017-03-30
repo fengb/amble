@@ -5,7 +5,22 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
+	"strings"
 )
+
+var HEADER_SPLITTER = regexp.MustCompile(": *")
+
+func ParseHeaders(raw string) (map[string]string, error) {
+	headers := make(map[string]string)
+	for _, line := range strings.Split(raw, "\n") {
+		tokens := HEADER_SPLITTER.Split(line, 2)
+		if len(tokens) == 2 {
+			headers[tokens[0]] = string(strings.TrimSpace(tokens[1]))
+		}
+	}
+	return headers, nil
+}
 
 var client = &http.Client{}
 
