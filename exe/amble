@@ -1,6 +1,0 @@
-#!/usr/bin/env ruby
-
-require 'amble'
-
-opts = Amble.parse_options(ARGV)
-Amble.run(opts)
