@@ -41,22 +41,23 @@ func ErrorEqual(err error, exp E) bool {
 		return true
 	}
 
-	if herr, ok := err.(*ParseHeaderError); ok {
-		// TODO: why doesn't reflect.DeepEqual work?
-		if len(herr.FailedLines) != len(exp) {
-			return false
-		}
-
-		for i, line := range herr.FailedLines {
-			if line != exp[i] {
-				return false
-			}
-		}
-
-		return true
+	herr, ok := err.(*ParseHeaderError)
+	if !ok {
+		return false
 	}
 
-	return false
+	// TODO: why doesn't reflect.DeepEqual work?
+	if len(herr.FailedLines) != len(exp) {
+		return false
+	}
+
+	for i, line := range herr.FailedLines {
+		if line != exp[i] {
+			return false
+		}
+	}
+
+	return true
 }
 
 func TestParseHeaders(t *testing.T) {

@@ -82,11 +82,13 @@ func isInteractive(f *os.File) bool {
 func main() {
 	headers := make(map[string]string)
 	if !isInteractive(os.Stdin) {
-		pipeHeaders, _ := ParseHeaders(os.Stdin)
-		if pipeHeaders != nil {
-			for k, v := range pipeHeaders {
-				headers[k] = v
-			}
+		pipeHeaders, err := ParseHeaders(os.Stdin)
+		if pipeHeaders == nil {
+			panic(err)
+		}
+
+		for k, v := range pipeHeaders {
+			headers[k] = v
 		}
 	}
 	stream("http://google.com/", headers)
