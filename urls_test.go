@@ -33,8 +33,16 @@ func TestFullUrls(t *testing.T) {
 		} else {
 			if len(fullUrls) != 0 {
 				t.Errorf("FullUrls(%q, %q) = <%s> should err", tt.headers, tt.url, fullUrls)
-			} else if err.FailedUrls[0] != tt.url {
-				t.Errorf("FullUrls(%q, %q) err <%s> want <%s>", tt.headers, tt.url, err, tt.url)
+			}
+
+			if err != nil {
+				if uerr, ok := err.(*FullUrlsError); ok {
+					if uerr.FailedUrls[0] != tt.url {
+						t.Errorf("FullUrls(%q, %q) err <%s> want <%s>", tt.headers, tt.url, err, tt.url)
+					}
+				} else {
+					t.Errorf("FullUrls(%q, %q) unknown err <%s>", tt.headers, tt.url, err)
+				}
 			}
 		}
 	}
