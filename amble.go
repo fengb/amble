@@ -9,7 +9,7 @@ import (
 
 var client = &http.Client{}
 
-func stream(url string, headers map[string]string) error {
+func stream(headers map[string]string, url string) error {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
@@ -55,5 +55,13 @@ func main() {
 			headers[k] = v
 		}
 	}
-	stream("http://google.com/", headers)
+
+	fullUrls, err := FullUrls(headers, os.Args[1:])
+	if err != nil {
+		panic(err)
+	}
+
+	for _, fullUrl := range fullUrls {
+		stream(headers, fullUrl)
+	}
 }
