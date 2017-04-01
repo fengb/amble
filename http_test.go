@@ -17,6 +17,9 @@ var fetchTests = []struct {
 	{200, H{}, nil},
 	{200, defaultHeader, []byte("Not e")},
 	{204, defaultHeader, nil},
+	{302, H{"Location": "http://example.com"}, nil},
+	{422, defaultHeader, []byte("why")},
+	{500, defaultHeader, []byte("buh")},
 }
 
 func EqualHeaders(actual http.Header, expected H) bool {
