@@ -1,38 +1,8 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 )
-
-var client = &http.Client{}
-
-func stream(headers map[string]string, url string) error {
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return err
-	}
-
-	for k, v := range headers {
-		req.Header.Set(k, v)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	fmt.Println(url, resp.Status)
-	resp.Header.Write(os.Stdout)
-	fmt.Println(string(body))
-	return nil
-}
 
 func isInteractive(f *os.File) bool {
 	info, err := f.Stat()
@@ -62,6 +32,6 @@ func main() {
 	}
 
 	for _, fullUrl := range fullUrls {
-		stream(headers, fullUrl)
+		Fetch(headers, fullUrl)
 	}
 }
