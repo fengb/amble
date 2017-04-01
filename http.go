@@ -12,6 +12,7 @@ var client = &http.Client{
 }
 
 type FetchResult struct {
+	Status int
 	Header http.Header
 	Body   []byte
 }
@@ -36,5 +37,5 @@ func Fetch(headers map[string]string, url string) (FetchResult, error) {
 		return FetchResult{}, err
 	}
 
-	return FetchResult{Header: resp.Header, Body: body}, err
+	return FetchResult{Status: resp.StatusCode, Header: resp.Header, Body: body}, nil
 }

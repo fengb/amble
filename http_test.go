@@ -52,6 +52,9 @@ func TestFetch(t *testing.T) {
 		if err != nil {
 			t.Errorf("Fetch(%d) err <%s>", tt.status, err)
 		}
+		if result.Status != tt.status {
+			t.Errorf("Fetch(%d) Status = <%d>", tt.status, result.Status)
+		}
 		if !EqualHeaders(result.Header, tt.headers) {
 			t.Errorf("Fetch(%d) Header = <%s> want <%s>", tt.status, result.Header, tt.headers)
 		}

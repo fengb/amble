@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 )
 
@@ -32,6 +33,12 @@ func main() {
 	}
 
 	for _, fullUrl := range fullUrls {
-		Fetch(headers, fullUrl)
+		result, err := Fetch(headers, fullUrl)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(fullUrl, result.Status)
+		result.Header.Write(os.Stdout)
+		fmt.Println(string(result.Body))
 	}
 }
