@@ -12,15 +12,18 @@ var client = &http.Client{
 }
 
 type FetchResult struct {
+	Url    string
 	Status int
 	Header http.Header
 	Body   []byte
 }
 
 func Fetch(headers map[string]string, url string) (FetchResult, error) {
+	result := FetchResult{Url: url}
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return FetchResult{}, err
+		return result, err
 	}
 
 	for k, v := range headers {
@@ -29,13 +32,17 @@ func Fetch(headers map[string]string, url string) (FetchResult, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return FetchResult{}, err
+		return result, err
 	}
 	defer resp.Body.Close()
+	result.Status = resp.StatusCode
+	result.Header = resp.Header
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return FetchResult{}, err
+		return result, err
 	}
 
-	return FetchResult{Status: resp.StatusCode, Header: resp.Header, Body: body}, nil
+	result.Body = body
+	return result, nil
 }
