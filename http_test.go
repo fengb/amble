@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 )
 
@@ -14,12 +15,32 @@ var fetchTests = []struct {
 	headers H
 	body    []byte
 }{
-	{200, H{}, nil},
-	{200, defaultHeader, []byte("Not e")},
+	{200, H{}, []byte("Not e")},
 	{204, defaultHeader, nil},
-	{302, H{"Location": "http://example.com"}, nil},
+	{302, H{"Location": "http://example.com"}, []byte("Redirect")},
 	{422, defaultHeader, []byte("why")},
 	{500, defaultHeader, []byte("buh")},
+}
+
+func mockHandler(w http.ResponseWriter, req *http.Request) {
+	for _, data := range fetchTests {
+		if req.URL.String() != "/"+strconv.Itoa(data.status) {
+			continue
+		}
+
+		for k, v := range data.headers {
+			w.Header().Set(k, v)
+		}
+		w.WriteHeader(data.status)
+
+		if data.body != nil {
+			w.Write(data.body)
+		}
+
+		return
+	}
+
+	panic("URL unknown: " + req.URL.String())
 }
 
 func EqualHeaders(actual http.Header, expected H) bool {
@@ -34,21 +55,12 @@ func EqualHeaders(actual http.Header, expected H) bool {
 
 func TestFetch(t *testing.T) {
 	headers := make(map[string]string)
+
+	server := httptest.NewServer(http.HandlerFunc(mockHandler))
+	defer server.Close()
+
 	for _, tt := range fetchTests {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			for k, v := range tt.headers {
-				w.Header().Set(k, v)
-			}
-			w.WriteHeader(tt.status)
-
-			if tt.body != nil {
-				w.Write(tt.body)
-			}
-		}))
-
-		defer server.Close()
-
-		result, err := Fetch(headers, server.URL)
+		result, err := Fetch(headers, server.URL+"/"+strconv.Itoa(tt.status))
 		if err != nil {
 			t.Errorf("Fetch(%d) err <%s>", tt.status, err)
 		}
