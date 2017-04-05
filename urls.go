@@ -2,9 +2,9 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"path"
 	"regexp"
-	"strings"
 )
 
 var startsWithProtocol = regexp.MustCompile("^[a-z]+://")
@@ -24,11 +24,12 @@ func FullUrl(headers map[string]string, url string) (string, error) {
 }
 
 type FullUrlsError struct {
+	Headers    map[string]string
 	FailedUrls []string
 }
 
 func (e *FullUrlsError) Error() string {
-	return strings.Join(e.FailedUrls, ", ")
+	return fmt.Sprintf("Cannot generate urls <%q> with headers <%q>", e.FailedUrls, e.Headers)
 }
 
 func FullUrls(headers map[string]string, urls []string) ([]string, error) {
@@ -46,6 +47,6 @@ func FullUrls(headers map[string]string, urls []string) ([]string, error) {
 	if len(failedUrls) == 0 {
 		return fullUrls, nil
 	} else {
-		return fullUrls, &FullUrlsError{FailedUrls: failedUrls}
+		return fullUrls, &FullUrlsError{Headers: headers, FailedUrls: failedUrls}
 	}
 }

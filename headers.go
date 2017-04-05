@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"regexp"
@@ -14,7 +15,7 @@ type ParseHeaderError struct {
 }
 
 func (e *ParseHeaderError) Error() string {
-	return strings.Join(e.FailedLines, ", ")
+	return fmt.Sprintf("Cannot parse headers: <%q>", e.FailedLines)
 }
 
 func ParseHeaders(r io.Reader) (map[string]string, error) {
