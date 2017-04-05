@@ -51,7 +51,7 @@ func Fetch(headers map[string]string, url string) (FetchResult, error) {
 	return result, nil
 }
 
-func FetchAll(headers map[string]string, urls ...string) chan FetchResult {
+func FetchAll(headers map[string]string, urls ...string) <-chan FetchResult {
 	c := make(chan FetchResult)
 	go func() {
 		mailboxes := []chan FetchResult{}
