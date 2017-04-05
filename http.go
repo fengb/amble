@@ -16,6 +16,7 @@ type FetchResult struct {
 	Status int
 	Header http.Header
 	Body   []byte
+	Error  error
 }
 
 func Fetch(headers map[string]string, url string) (FetchResult, error) {
@@ -23,6 +24,7 @@ func Fetch(headers map[string]string, url string) (FetchResult, error) {
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
+		result.Error = err
 		return result, err
 	}
 
@@ -32,6 +34,7 @@ func Fetch(headers map[string]string, url string) (FetchResult, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
+		result.Error = err
 		return result, err
 	}
 	defer resp.Body.Close()
@@ -40,9 +43,33 @@ func Fetch(headers map[string]string, url string) (FetchResult, error) {
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		result.Error = err
 		return result, err
 	}
 
 	result.Body = body
 	return result, nil
+}
+
+func FetchAll(headers map[string]string, urls ...string) chan FetchResult {
+	c := make(chan FetchResult)
+	go func() {
+		mailboxes := []chan FetchResult{}
+		for _, url := range urls {
+			mailbox := make(chan FetchResult)
+			go func(url string) {
+				result, _ := Fetch(headers, url)
+				mailbox <- result
+				close(mailbox)
+			}(url)
+			mailboxes = append(mailboxes, mailbox)
+		}
+
+		for _, mailbox := range mailboxes {
+			c <- <-mailbox
+		}
+
+		close(c)
+	}()
+	return c
 }

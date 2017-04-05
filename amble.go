@@ -32,12 +32,11 @@ func main() {
 		panic(err)
 	}
 
-	for _, fullUrl := range fullUrls {
-		result, err := Fetch(headers, fullUrl)
-		if err != nil {
+	for result := range FetchAll(headers, fullUrls...) {
+		if result.Error != nil {
 			panic(err)
 		}
-		fmt.Println(fullUrl, result.Status)
+		fmt.Println(result.Url, result.Status)
 		result.Header.Write(os.Stdout)
 		fmt.Println(string(result.Body))
 	}

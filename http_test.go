@@ -75,3 +75,30 @@ func TestFetch(t *testing.T) {
 		}
 	}
 }
+
+func TestFetchAll(t *testing.T) {
+	headers := make(map[string]string)
+
+	server := httptest.NewServer(http.HandlerFunc(mockHandler))
+	defer server.Close()
+
+	urls := []string{
+		server.URL + "/200",
+		server.URL + "/204",
+		server.URL + "/302",
+	}
+
+	results := []FetchResult{}
+	for result := range FetchAll(headers, urls...) {
+		results = append(results, result)
+	}
+
+	if len(results) != len(urls) {
+		t.Errorf("FetchAll() len = <%d> want <%d>", len(results), len(urls))
+	}
+	for i, result := range results {
+		if result.Url != urls[i] {
+			t.Errorf("FetchAll() [%d].Url = <%s> want <%s>", i, result.Url, urls[i])
+		}
+	}
+}
