@@ -34,7 +34,7 @@ func main() {
 
 	for result := range FetchAll(headers, fullUrls...) {
 		if result.Error != nil {
-			panic(err)
+			panic(result.Error)
 		}
 		fmt.Println(result.Url, result.Status)
 		result.Header.Write(os.Stdout)
