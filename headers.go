@@ -23,19 +23,19 @@ func ParseHeaders(r io.Reader) (map[string]string, error) {
 		return nil, err
 	}
 	headers := make(map[string]string)
-	failed_lines := []string{}
+	failedLines := []string{}
 	for _, line := range strings.Split(string(raw), "\n") {
 		tokens := headerSplitter.Split(line, 2)
 		if len(tokens) == 2 {
 			headers[tokens[0]] = string(strings.TrimSpace(tokens[1]))
 		} else {
-			failed_lines = append(failed_lines, line)
+			failedLines = append(failedLines, line)
 		}
 	}
 
-	if len(failed_lines) == 0 {
+	if len(failedLines) == 0 {
 		return headers, nil
 	} else {
-		return headers, &ParseHeaderError{FailedLines: failed_lines}
+		return headers, &ParseHeaderError{FailedLines: failedLines}
 	}
 }

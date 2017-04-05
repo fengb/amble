@@ -7,10 +7,10 @@ import (
 	"regexp"
 )
 
-var MIME_TYPE_MATCH = regexp.MustCompile("^[a-z]+/[a-z-]+")
+var mimeTypeMatch = regexp.MustCompile("^[a-z]+/[a-z-]+")
 
 func Pretty(contentType string, body []byte) (string, error) {
-	mimeType := MIME_TYPE_MATCH.FindString(contentType)
+	mimeType := mimeTypeMatch.FindString(contentType)
 	switch mimeType {
 	case "application/json":
 		return PrettyJson(body)
