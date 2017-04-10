@@ -38,11 +38,12 @@ func main() {
 		}
 		fmt.Println(result.Url, result.Status)
 		result.Header.Write(os.Stdout)
-		pretty, err := Pretty(result.Header["Content-Type"][0], result.Body)
-		if err == nil {
-			fmt.Println(pretty)
-		} else {
-			fmt.Println(string(result.Body))
+
+		pretty, err := Pretty(result.Header.Get("Content-Type"), result.Body)
+		if err != nil {
+			panic(err)
 		}
+
+		fmt.Println(pretty)
 	}
 }

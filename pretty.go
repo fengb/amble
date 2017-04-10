@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"regexp"
 )
 
@@ -15,7 +14,7 @@ func Pretty(contentType string, body []byte) (string, error) {
 	case "application/json":
 		return PrettyJson(body)
 	}
-	return "", errors.New("no pretty format")
+	return string(body), nil
 }
 
 func PrettyJson(body []byte) (string, error) {
