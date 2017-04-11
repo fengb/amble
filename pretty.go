@@ -3,13 +3,19 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
 	"regexp"
 )
 
 var mimeTypeMatch = regexp.MustCompile("^[a-z]+/[a-z-]+")
 
 func Pretty(contentType string, body []byte) (string, error) {
+	if len(contentType) == 0 {
+		contentType = http.DetectContentType(body)
+	}
+
 	mimeType := mimeTypeMatch.FindString(contentType)
+
 	switch mimeType {
 	case "application/json":
 		return PrettyJson(body)
